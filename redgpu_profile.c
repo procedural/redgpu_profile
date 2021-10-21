@@ -3,6 +3,7 @@ rm -f libredgpu_profile.so
 cc -fvisibility=hidden -fPIC -shared redgpu_profile.c -o libredgpu_profile.so
 exit
 #endif
+// cl /LD redgpu_profile.c
 
 #ifdef __linux__
 #define REDGPU_DECLSPEC __attribute__((visibility("default")))
@@ -13,10 +14,13 @@ exit
 #include <dlfcn.h>
 #endif
 #ifdef _WIN32
+#define REDGPU_DECLSPEC __declspec(dllexport)
 #include "C:/RedGpuSDK/redgpu.h"
 #include "C:/RedGpuSDK/redgpu_wsi.h"
 #include "C:/RedGpuSDK/redgpu_array_timestamp.h"
 #include "C:/github/procedural/profile/profile.h"
+#include <Windows.h>
+#pragma comment(lib, "C:/github/procedural/profile/profiledll.lib")
 #endif
 
 typedef struct RedProfileInternalRedGpuProcedureAddresses {
@@ -116,106 +120,116 @@ typedef struct RedProfileInternalRedGpuProcedureAddresses {
 } RedProfileInternalRedGpuProcedureAddresses;
 
 int                                        __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_isInitialized = 0;
-RedProfileInternalRedGpuProcedureAddresses __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu     = {};
+RedProfileInternalRedGpuProcedureAddresses __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu     = {0};
 
 static void redProfileInternalInitializeProcedurePointers(void) {
+#ifdef _WIN32
+  HMODULE libredgpu = 0;
+#endif
   if (__REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_isInitialized == 0) {
     __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_isInitialized = 1;
-    // TODO(Constantine): Windows.
+#ifdef _WIN32
+    libredgpu = LoadLibrary("C:/RedGpuSDK/redgpu.dll");
+#define REDGPU_PROFILE_LOAD_PROC GetProcAddress
+#endif
+#ifdef __linux__
     void * libredgpu = dlopen("/opt/RedGpuSDK/libredgpu.so", RTLD_NOW);
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryGetBudget = dlsym(libredgpu, "redMemoryGetBudget");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryAllocate = dlsym(libredgpu, "redMemoryAllocate");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryAllocateMappable = dlsym(libredgpu, "redMemoryAllocateMappable");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryFree = dlsym(libredgpu, "redMemoryFree");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemorySet = dlsym(libredgpu, "redMemorySet");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryMap = dlsym(libredgpu, "redMemoryMap");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryUnmap = dlsym(libredgpu, "redMemoryUnmap");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryNonCoherentFlush = dlsym(libredgpu, "redMemoryNonCoherentFlush");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryNonCoherentInvalidate = dlsym(libredgpu, "redMemoryNonCoherentInvalidate");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryAllocate = dlsym(libredgpu, "redStructsMemoryAllocate");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryAllocateSamplers = dlsym(libredgpu, "redStructsMemoryAllocateSamplers");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemorySuballocateStructs = dlsym(libredgpu, "redStructsMemorySuballocateStructs");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryReset = dlsym(libredgpu, "redStructsMemoryReset");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryFree = dlsym(libredgpu, "redStructsMemoryFree");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsSet = dlsym(libredgpu, "redStructsSet");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateContext = dlsym(libredgpu, "redCreateContext");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateArray = dlsym(libredgpu, "redCreateArray");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateImage = dlsym(libredgpu, "redCreateImage");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateSampler = dlsym(libredgpu, "redCreateSampler");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateTexture = dlsym(libredgpu, "redCreateTexture");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateGpuCode = dlsym(libredgpu, "redCreateGpuCode");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateOutputDeclaration = dlsym(libredgpu, "redCreateOutputDeclaration");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateStructDeclaration = dlsym(libredgpu, "redCreateStructDeclaration");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureParameters = dlsym(libredgpu, "redCreateProcedureParameters");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureCache = dlsym(libredgpu, "redCreateProcedureCache");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedure = dlsym(libredgpu, "redCreateProcedure");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureCompute = dlsym(libredgpu, "redCreateProcedureCompute");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateOutput = dlsym(libredgpu, "redCreateOutput");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateCpuSignal = dlsym(libredgpu, "redCreateCpuSignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateGpuSignal = dlsym(libredgpu, "redCreateGpuSignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateGpuToCpuSignal = dlsym(libredgpu, "redCreateGpuToCpuSignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateCalls = dlsym(libredgpu, "redCreateCalls");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateCallsReusable = dlsym(libredgpu, "redCreateCallsReusable");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyContext = dlsym(libredgpu, "redDestroyContext");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyArray = dlsym(libredgpu, "redDestroyArray");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyImage = dlsym(libredgpu, "redDestroyImage");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroySampler = dlsym(libredgpu, "redDestroySampler");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyTexture = dlsym(libredgpu, "redDestroyTexture");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyGpuCode = dlsym(libredgpu, "redDestroyGpuCode");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyOutputDeclaration = dlsym(libredgpu, "redDestroyOutputDeclaration");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyStructDeclaration = dlsym(libredgpu, "redDestroyStructDeclaration");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyProcedureParameters = dlsym(libredgpu, "redDestroyProcedureParameters");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyProcedureCache = dlsym(libredgpu, "redDestroyProcedureCache");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyProcedure = dlsym(libredgpu, "redDestroyProcedure");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyOutput = dlsym(libredgpu, "redDestroyOutput");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyCpuSignal = dlsym(libredgpu, "redDestroyCpuSignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyGpuSignal = dlsym(libredgpu, "redDestroyGpuSignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyGpuToCpuSignal = dlsym(libredgpu, "redDestroyGpuToCpuSignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyCalls = dlsym(libredgpu, "redDestroyCalls");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redProcedureCacheGetBlob = dlsym(libredgpu, "redProcedureCacheGetBlob");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redProcedureCacheMergeCaches = dlsym(libredgpu, "redProcedureCacheMergeCaches");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCpuSignalGetStatus = dlsym(libredgpu, "redCpuSignalGetStatus");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCpuSignalWait = dlsym(libredgpu, "redCpuSignalWait");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCpuSignalUnsignal = dlsym(libredgpu, "redCpuSignalUnsignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuToCpuSignalGetStatus = dlsym(libredgpu, "redGpuToCpuSignalGetStatus");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuToCpuSignalUnsignal = dlsym(libredgpu, "redGpuToCpuSignalUnsignal");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallsSet = dlsym(libredgpu, "redCallsSet");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallsEnd = dlsym(libredgpu, "redCallsEnd");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGetCallProceduresAndAddresses = dlsym(libredgpu, "redGetCallProceduresAndAddresses");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetDynamicViewport = dlsym(libredgpu, "redCallSetDynamicViewport");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetDynamicScissor = dlsym(libredgpu, "redCallSetDynamicScissor");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetStructsMemory = dlsym(libredgpu, "redCallSetStructsMemory");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetProcedureParameters = dlsym(libredgpu, "redCallSetProcedureParameters");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetProcedureOutput = dlsym(libredgpu, "redCallSetProcedureOutput");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallEndProcedureOutput = dlsym(libredgpu, "redCallEndProcedureOutput");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallUsageAliasOrderBarrier = dlsym(libredgpu, "redCallUsageAliasOrderBarrier");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallMark = dlsym(libredgpu, "redCallMark");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallMarkSet = dlsym(libredgpu, "redCallMarkSet");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallMarkEnd = dlsym(libredgpu, "redCallMarkEnd");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redQueueSubmit = dlsym(libredgpu, "redQueueSubmit");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMark = dlsym(libredgpu, "redMark");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMarkSet = dlsym(libredgpu, "redMarkSet");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMarkEnd = dlsym(libredgpu, "redMarkEnd");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateSurfaceWin32 = dlsym(libredgpu, "redCreateSurfaceWin32");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateSurfaceXlibOrXcb = dlsym(libredgpu, "redCreateSurfaceXlibOrXcb");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreatePresent = dlsym(libredgpu, "redCreatePresent");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroySurface = dlsym(libredgpu, "redDestroySurface");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyPresent = dlsym(libredgpu, "redDestroyPresent");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redQueueFamilyIndexGetSupportsPresent = dlsym(libredgpu, "redQueueFamilyIndexGetSupportsPresent");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redSurfaceGetPresentFeatures = dlsym(libredgpu, "redSurfaceGetPresentFeatures");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redSurfaceGetCurrentPropertiesAndPresentLimits = dlsym(libredgpu, "redSurfaceGetCurrentPropertiesAndPresentLimits");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redPresentGetImageIndex = dlsym(libredgpu, "redPresentGetImageIndex");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redQueuePresent = dlsym(libredgpu, "redQueuePresent");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuVisTracingStart = dlsym(libredgpu, "redGpuVisTracingStart");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuVisTracingCapture = dlsym(libredgpu, "redGpuVisTracingCapture");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuVisTracingStop = dlsym(libredgpu, "redGpuVisTracingStop");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDebugArrayGetHandle = dlsym(libredgpu, "redDebugArrayGetHandle");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDebugArrayCallPrint = dlsym(libredgpu, "redDebugArrayCallPrint");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureComputingLanguage = dlsym(libredgpu, "redCreateProcedureComputingLanguage");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateArrayTimestamp = dlsym(libredgpu, "redCreateArrayTimestamp");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyArrayTimestamp = dlsym(libredgpu, "redDestroyArrayTimestamp");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallArrayTimestampWrite = dlsym(libredgpu, "redCallArrayTimestampWrite");
-    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redArrayTimestampRead = dlsym(libredgpu, "redArrayTimestampRead");
+#define REDGPU_PROFILE_LOAD_PROC dlsym
+#endif
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryGetBudget = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryGetBudget");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryAllocate = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryAllocate");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryAllocateMappable = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryAllocateMappable");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryFree = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryFree");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemorySet = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemorySet");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryMap = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryMap");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryUnmap = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryUnmap");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryNonCoherentFlush = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryNonCoherentFlush");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMemoryNonCoherentInvalidate = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMemoryNonCoherentInvalidate");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryAllocate = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redStructsMemoryAllocate");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryAllocateSamplers = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redStructsMemoryAllocateSamplers");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemorySuballocateStructs = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redStructsMemorySuballocateStructs");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryReset = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redStructsMemoryReset");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsMemoryFree = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redStructsMemoryFree");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redStructsSet = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redStructsSet");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateContext = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateContext");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateArray = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateArray");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateImage = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateImage");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateSampler = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateSampler");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateTexture = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateTexture");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateGpuCode = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateGpuCode");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateOutputDeclaration = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateOutputDeclaration");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateStructDeclaration = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateStructDeclaration");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureParameters = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateProcedureParameters");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureCache = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateProcedureCache");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedure = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateProcedure");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureCompute = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateProcedureCompute");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateOutput = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateOutput");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateCpuSignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateCpuSignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateGpuSignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateGpuSignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateGpuToCpuSignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateGpuToCpuSignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateCalls = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateCalls");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateCallsReusable = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateCallsReusable");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyContext = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyContext");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyArray = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyArray");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyImage = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyImage");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroySampler = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroySampler");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyTexture = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyTexture");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyGpuCode = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyGpuCode");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyOutputDeclaration = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyOutputDeclaration");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyStructDeclaration = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyStructDeclaration");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyProcedureParameters = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyProcedureParameters");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyProcedureCache = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyProcedureCache");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyProcedure = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyProcedure");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyOutput = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyOutput");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyCpuSignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyCpuSignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyGpuSignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyGpuSignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyGpuToCpuSignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyGpuToCpuSignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyCalls = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyCalls");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redProcedureCacheGetBlob = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redProcedureCacheGetBlob");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redProcedureCacheMergeCaches = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redProcedureCacheMergeCaches");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCpuSignalGetStatus = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCpuSignalGetStatus");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCpuSignalWait = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCpuSignalWait");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCpuSignalUnsignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCpuSignalUnsignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuToCpuSignalGetStatus = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redGpuToCpuSignalGetStatus");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuToCpuSignalUnsignal = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redGpuToCpuSignalUnsignal");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallsSet = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallsSet");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallsEnd = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallsEnd");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGetCallProceduresAndAddresses = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redGetCallProceduresAndAddresses");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetDynamicViewport = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallSetDynamicViewport");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetDynamicScissor = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallSetDynamicScissor");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetStructsMemory = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallSetStructsMemory");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetProcedureParameters = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallSetProcedureParameters");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallSetProcedureOutput = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallSetProcedureOutput");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallEndProcedureOutput = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallEndProcedureOutput");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallUsageAliasOrderBarrier = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallUsageAliasOrderBarrier");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallMark = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallMark");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallMarkSet = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallMarkSet");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallMarkEnd = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallMarkEnd");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redQueueSubmit = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redQueueSubmit");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMark = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMark");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMarkSet = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMarkSet");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redMarkEnd = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redMarkEnd");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateSurfaceWin32 = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateSurfaceWin32");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateSurfaceXlibOrXcb = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateSurfaceXlibOrXcb");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreatePresent = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreatePresent");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroySurface = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroySurface");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyPresent = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyPresent");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redQueueFamilyIndexGetSupportsPresent = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redQueueFamilyIndexGetSupportsPresent");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redSurfaceGetPresentFeatures = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redSurfaceGetPresentFeatures");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redSurfaceGetCurrentPropertiesAndPresentLimits = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redSurfaceGetCurrentPropertiesAndPresentLimits");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redPresentGetImageIndex = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redPresentGetImageIndex");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redQueuePresent = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redQueuePresent");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuVisTracingStart = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redGpuVisTracingStart");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuVisTracingCapture = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redGpuVisTracingCapture");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redGpuVisTracingStop = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redGpuVisTracingStop");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDebugArrayGetHandle = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDebugArrayGetHandle");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDebugArrayCallPrint = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDebugArrayCallPrint");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateProcedureComputingLanguage = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateProcedureComputingLanguage");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCreateArrayTimestamp = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCreateArrayTimestamp");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redDestroyArrayTimestamp = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redDestroyArrayTimestamp");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redCallArrayTimestampWrite = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redCallArrayTimestampWrite");
+    __REDGPU_PROFILE_GLOBAL_cc96723e4dced66dd20eb710df8bf9075add8685d19d3ec3942c99212941b1ea_libredgpu.redArrayTimestampRead = REDGPU_PROFILE_LOAD_PROC(libredgpu, "redArrayTimestampRead");
+#undef REDGPU_PROFILE_LOAD_PROC
   }
 }
 
